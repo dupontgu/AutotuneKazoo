@@ -1,7 +1,7 @@
 
-class TriangleWaveGenerator {
+class SawtoothWaveGenerator {
 public:
-    TriangleWaveGenerator(float sampleRate)
+    SawtoothWaveGenerator(float sampleRate)
         : sampleRate(sampleRate), frequency(440.0f), phase(0.0f), phaseIncrement(0.0f) {
         updatePhaseIncrement();
     }

@@ -2,7 +2,7 @@
 
 #include <driver/i2s.h>
 #include "Yin.h"
-#include "TriangleWaveGenerator.h"
+#include "SawtoothWaveGenerator.h"
 #include <BLEMIDI_Transport.h>
 #include <hardware/BLEMIDI_ESP32_NimBLE.h>
 
@@ -35,7 +35,7 @@ uint16_t offsetYindex = BUFFER_SIZE / 2;
 int16_t debounceCount = 0;
 float activePitch = -1;
 Yin yInMethod;
-TriangleWaveGenerator *triangle;
+SawtoothWaveGenerator *sawtooth;
 int scaleMap[NUM_SCALES][SCALE_SIZE] = {
   // major
   { 0, 2, 4, 5, 7, 9, 11 },
@@ -82,7 +82,7 @@ void updateFrequency(float frequency) {
       bleInputNote = -1;
     } else {
       activePitch = midiNoteToFrequency(queuedBleInputNote);
-      triangle->setFrequency(activePitch);
+      sawtooth->setFrequency(activePitch);
       bleInputNote = queuedBleInputNote;
     }
   } else if (bleInputNote < 0) {
@@ -94,7 +94,7 @@ void updateFrequency(float frequency) {
       bleOutputNote = -1;
     } else if (frequency >= 0 && activePitch != frequency) {
       activePitch = frequency;
-      triangle->setFrequency(frequency);
+      sawtooth->setFrequency(frequency);
       Serial.println(frequency);
       int previousNote = bleOutputNote;
       bleOutputNote = frequencyToMIDINumber(frequency);
@@ -197,8 +197,8 @@ void setup() {
   Serial.begin(115200);
   delay(500);
 
-  triangle = new TriangleWaveGenerator(PLAYBACK_RATE);
-  triangle->setFrequency(220);
+  sawtooth = new SawtoothWaveGenerator(PLAYBACK_RATE);
+  sawtooth->setFrequency(220);
   Yin_init(&yInMethod, 0.2f);
 
   BLEMIDI.setHandleConnected(OnConnected);
@@ -305,8 +305,8 @@ void loop() {
       yindicies[y] = index;
     }
 
-    int32_t triangleSample = triangle->readSample();
-    samples[i] = (muteSpeaker || activePitch < 0) ? 0 : triangleSample;
+    int32_t sawtoothSample = sawtooth->readSample();
+    samples[i] = (muteSpeaker || activePitch < 0) ? 0 : sawtoothSample;
   }
 
   int bytesWritten;
